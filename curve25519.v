@@ -10,9 +10,9 @@ pub const (
 	// point_size is the size of the point input to the x25519
 	point_size  = 32
 
-	// basepoint is the canonical Curve25519 generator, encoded as a byte with value 9, 
+	// basepoint is the canonical Curve25519 generator, encoded as a byte with value 9,
 	// followed by 31 zero bytes
-	basepoint   = [byte(9), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	basepoint   = [u8(9), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0]
 )
 
@@ -24,28 +24,28 @@ pub const (
 // outputs are 32-byte strings (for X25519)
 // scalar can be generated at random, for example with `crypto.rand` and point should
 // be either basepoint or the output of another `x25519` call.
-pub fn x25519(scalar []byte, point []byte) ?[]byte {
-	mut dst := []byte{len: 32, cap: 32}
+pub fn x25519(scalar []u8, point []u8) ![]u8 {
+	mut dst := []u8{len: 32, cap: 32}
 	return x25519_generic(mut dst, scalar, point)
 }
 
-fn x25519_generic(mut dst []byte, scalar []byte, point []byte) ?[]byte {
+fn x25519_generic(mut dst []u8, scalar []u8, point []u8) ![]u8 {
 	if scalar.len != curve25519.scalar_size {
-		return error('bad scalar length: $scalar.len')
+		return error('bad scalar length: ${scalar.len}')
 	}
 	if point.len != curve25519.point_size {
-		return error('bad point length: $point.len')
+		return error('bad point length: ${point.len}')
 	}
 
 	inp := scalar.clone()
 
 	if point == curve25519.basepoint {
 		// check_basepoint()
-		scalar_base_mult(mut dst, inp) ?
+		scalar_base_mult(mut dst, inp)!
 	} else {
-		zero := []byte{len: 32, cap: 32}
+		zero := []u8{len: 32, cap: 32}
 		base := point.clone()
-		scalar_mult(mut dst, inp, base) ?
+		scalar_mult(mut dst, inp, base)!
 		if subtle.constant_time_compare(dst[..], zero) == 1 {
 			return error('bad input point: low order point')
 		}
@@ -53,11 +53,11 @@ fn x25519_generic(mut dst []byte, scalar []byte, point []byte) ?[]byte {
 	return dst
 }
 
-fn scalar_base_mult(mut dst []byte, scalar []byte) ? {
-	scalar_mult(mut dst, scalar, curve25519.basepoint) ?
+fn scalar_base_mult(mut dst []u8, scalar []u8) ! {
+	scalar_mult(mut dst, scalar, curve25519.basepoint)!
 }
 
-fn scalar_mult(mut dst []byte, scalar []byte, point []byte) ? {
+fn scalar_mult(mut dst []u8, scalar []u8, point []u8) ! {
 	if scalar.len != curve25519.scalar_size {
 		return error('scalar.lenght != 32')
 	}
@@ -86,7 +86,7 @@ fn scalar_mult(mut dst []byte, scalar []byte, point []byte) ? {
 	mut tmp0 := edwards25519.Element{}
 	mut tmp1 := edwards25519.Element{}
 
-	x1.set_bytes(point[..]) ?
+	x1.set_bytes(point[..])!
 	x2.one()
 	x3.set(x1)
 	z3.one()
@@ -126,13 +126,13 @@ fn scalar_mult(mut dst []byte, scalar []byte, point []byte) ? {
 
 	z2.invert(z2)
 	x2.multiply(x2, z2)
-	copy(dst, x2.bytes())
+	copy(mut dst, x2.bytes())
 }
 
 // this is not needed, we don't have global var
 /*
 fn check_basepoint() {
-	eq := subtle.constant_time_compare(curve25519.basepoint, [byte(0x09), 0x00, 0x00, 0x00, 0x00,
+	eq := subtle.constant_time_compare(basepoint, [u8(0x09), 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 	if eq != 1 {
