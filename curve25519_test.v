@@ -30,7 +30,7 @@ fn test_x25519_basepoint() {
 	x[0] = 1
 
 	for i := 0; i < 200; i++ {
-		x = x25519(x, basepoint) or { curve25519.bytes_error }
+		x = x25519(x, base_point) or { curve25519.bytes_error }
 		assert x != curve25519.bytes_error
 	}
 	expected_hex := '89161fde887b2b53de549af483940106ecc114d6982daa98256de23bdf77661a'

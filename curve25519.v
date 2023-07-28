@@ -10,9 +10,12 @@ pub const (
 	// point_size is the size of the point input to the x25519
 	point_size  = 32
 
-	// basepoint is the canonical Curve25519 generator, encoded as a byte with value 9,
+	// zero_point is point with 32 bytes of zero  (null) bytes
+	zero_point  = []u8{len: 32, cap: 32, init: u8(0x00)}
+
+	// base_point is the canonical Curve25519 generator, encoded as a byte with value 9,
 	// followed by 31 zero bytes
-	basepoint   = [u8(9), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	base_point  = [u8(9), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0]
 )
 
@@ -23,7 +26,7 @@ pub const (
 // Although the functions work internally with integers, the inputs and
 // outputs are 32-byte strings (for X25519)
 // scalar can be generated at random, for example with `crypto.rand` and point should
-// be either basepoint or the output of another `x25519` call.
+// be either base_point or the output of another `x25519` call.
 pub fn x25519(scalar []u8, point []u8) ![]u8 {
 	mut dst := []u8{len: 32, cap: 32}
 	return x25519_generic(mut dst, scalar, point)
@@ -39,14 +42,13 @@ fn x25519_generic(mut dst []u8, scalar []u8, point []u8) ![]u8 {
 
 	inp := scalar.clone()
 
-	if point == curve25519.basepoint {
+	if point == curve25519.base_point {
 		// check_basepoint()
 		scalar_base_mult(mut dst, inp)!
 	} else {
-		zero := []u8{len: 32, cap: 32}
 		base := point.clone()
 		scalar_mult(mut dst, inp, base)!
-		if subtle.constant_time_compare(dst[..], zero) == 1 {
+		if subtle.constant_time_compare(dst[..], curve25519.zero_point) == 1 {
 			return error('bad input point: low order point')
 		}
 	}
@@ -54,7 +56,7 @@ fn x25519_generic(mut dst []u8, scalar []u8, point []u8) ![]u8 {
 }
 
 fn scalar_base_mult(mut dst []u8, scalar []u8) ! {
-	scalar_mult(mut dst, scalar, curve25519.basepoint)!
+	scalar_mult(mut dst, scalar, curve25519.base_point)!
 }
 
 fn scalar_mult(mut dst []u8, scalar []u8, point []u8) ! {
@@ -132,7 +134,7 @@ fn scalar_mult(mut dst []u8, scalar []u8, point []u8) ! {
 // this is not needed, we don't have global var
 /*
 fn check_basepoint() {
-	eq := subtle.constant_time_compare(basepoint, [u8(0x09), 0x00, 0x00, 0x00, 0x00,
+	eq := subtle.constant_time_compare(base_point, [u8(0x09), 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 	if eq != 1 {

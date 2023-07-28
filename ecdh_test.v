@@ -6,15 +6,16 @@ import encoding.hex
 fn test_x25519_ecdh() ! {
 	dh := new_key_exchanger()
 
-	priv_bob := []u8{len: 32}
+	mut privkey_bob := dh.private_key_from_key([]u8{len: 32})!
 	mut secret := []u8{len: 32}
 
 	for i := 0; i < 2; i++ {
-		priv_alice, pub_alice := dh.generate_key_pair()!
-		pub_bob := dh.public_key(priv_bob)!
+		mut privkey_alice := dh.generate_private_key()!
+		pubkey_alice := dh.public_key(privkey_alice)!
+		pubkey_bob := dh.public_key(privkey_bob)!
 
-		sec_alice := dh.shared_secret(priv_alice, pub_bob)!
-		sec_bob := dh.shared_secret(priv_bob, pub_alice)!
+		sec_alice := dh.shared_secret(privkey_alice, pubkey_bob)!
+		sec_bob := dh.shared_secret(privkey_bob, pubkey_alice)!
 
 		assert hmac.equal(sec_alice, sec_bob) == true
 		assert hmac.equal(secret, sec_alice) == false
@@ -35,15 +36,17 @@ fn test_generate_key() ! {
 	dh := new_key_exchanger()
 
 	for i := 0; i < 50; i++ {
-		our_privkey, our_pubkey := dh.generate_key_pair()!
-		their_privkey, their_pubkey := dh.generate_key_pair()!
+		our_privkey := dh.generate_private_key()!
+		our_pubkey := dh.public_key(our_privkey)!
+		their_privkey := dh.generate_private_key()!
+		their_pubkey := dh.public_key(their_privkey)!
 
 		s1 := dh.shared_secret(our_privkey, their_pubkey)!
 		s2 := dh.shared_secret(their_privkey, our_pubkey)!
 
 		assert hmac.equal(s1, s2) == true
-		assert hmac.equal(our_pubkey, dh.public_key(our_privkey)!)
-		assert hmac.equal(their_pubkey, dh.public_key(their_privkey)!)
+		assert our_pubkey.equal(dh.public_key(our_privkey)!)
+		assert their_pubkey.equal(dh.public_key(their_privkey)!)
 	}
 }
 
@@ -52,18 +55,19 @@ fn test_from_rfc_vectors_key() ! {
 
 	alice_privbytes := hex.decode(curve25519.alice_privkey)!
 
-	ask, apk := dh.keypair_from_bytes(alice_privbytes)!
+	ask := dh.private_key_from_key(alice_privbytes)!
+	apk := dh.public_key(ask)!
 
 	alice_pk := dh.public_key(ask)!
-	assert hmac.equal(apk, alice_pk)
+	assert apk.equal(alice_pk)
 
-	assert curve25519.alice_pubkey == hex.encode(apk[..])
+	assert curve25519.alice_pubkey == hex.encode(apk.pubkey[..])
 
 	bskhex := hex.decode(curve25519.bob_privkey)!
 
-	bsk, bpk := dh.keypair_from_bytes(bskhex)!
-
-	assert curve25519.bob_pubkey == hex.encode(bpk[..])
+	bsk := dh.private_key_from_key(bskhex)!
+	bpk := dh.public_key(bsk)!
+	assert curve25519.bob_pubkey == hex.encode(bpk.pubkey[..])
 
 	s1 := dh.shared_secret(ask, bpk)!
 	s2 := dh.shared_secret(bsk, apk)!
