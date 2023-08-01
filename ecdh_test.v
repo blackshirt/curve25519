@@ -4,7 +4,7 @@ import crypto.hmac
 import encoding.hex
 
 fn test_x25519_ecdh() ! {
-	dh := new_key_exchanger()
+	dh := new_x25519_key_exchanger()
 
 	mut privkey_bob := dh.private_key_from_key([]u8{len: 32})!
 	mut secret := []u8{len: 32}
@@ -33,7 +33,7 @@ const (
 )
 
 fn test_generate_key() ! {
-	dh := new_key_exchanger()
+	dh := new_x25519_key_exchanger()
 
 	for i := 0; i < 50; i++ {
 		our_privkey := dh.generate_private_key()!
@@ -51,7 +51,7 @@ fn test_generate_key() ! {
 }
 
 fn test_from_rfc_vectors_key() ! {
-	dh := new_key_exchanger()
+	dh := new_x25519_key_exchanger()
 
 	alice_privbytes := hex.decode(curve25519.alice_privkey)!
 
