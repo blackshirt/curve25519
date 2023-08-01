@@ -17,28 +17,25 @@ pub enum Curve {
 	secp521r1 = 0x0019
 	x25519 = 0x001D
 	x448 = 0x001E
-	// ffdhe2048 = 0x0100
-	// ffdhe3072 = 0x0101
-	// ffdhe4096 = 0x0102
-	// ffdhe6144 = 0x0103
-	// ffdhe8192 = 0x0104
+	ffdhe2048 = 0x0100
+	ffdhe3072 = 0x0101
+	ffdhe4096 = 0x0102
+	ffdhe6144 = 0x0103
+	ffdhe8192 = 0x0104
 }
-
 // vfmt on
 
-fn (c Curve) new() !KeyExchanger {
+// new_key_exchanger creates new KeyExchanger for curve c,
+// for this time, only curve25519 is supported
+pub fn new_key_exchanger(c Curve) !KeyExchanger {
 	match c {
 		.x25519 { return new_x25519_key_exchanger() }
-		else { return error('unsupported curve') }
+		else { return error("unsupported curve") }
 	}
 }
 
-pub fn new_key_exchanger(c Curve) !KeyExchanger {
-	return c.new()!
-}
-
+// This const for Curve25519 based curve
 pub const (
-	// this is for Curve25519 based curve
 	key_size         = 32
 	private_key_size = key_size
 	public_key_size  = key_size
@@ -50,7 +47,7 @@ pub interface KeyExchanger {
 	private_key_size() int
 	// public_key_size should return underlying PublicKey bytes size.
 	public_key_size() int
-	// generate_private_key generates PrivateKey using entropy from secure crypto random generator.
+	// generate_private_key generates random PrivateKey using entropy from secure crypto random generator.
 	generate_private_key() !PrivateKey
 	// private_key_from_key generates PrivateKey from some given key.
 	private_key_from_key(key []u8) !PrivateKey
