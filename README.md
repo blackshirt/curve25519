@@ -108,8 +108,6 @@ enum Curve {
 
 Basically, Curve is a TLS 1.3 NamedGroup.  
 its defined here for simplicity.  
-vfmt off
-
 
 
 ## new_key_exchanger
