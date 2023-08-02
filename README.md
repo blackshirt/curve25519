@@ -63,7 +63,7 @@ const (
 ```
 
 
-[[Return to contents]](#Contents)
+
 
 ```v
 const (
@@ -75,7 +75,7 @@ const (
 
 This const for Curve25519 based curve
 
-[[Return to contents]](#Contents)
+
 
 ## x25519
 ```v
@@ -88,7 +88,7 @@ The functions take a scalar and a u-coordinate as inputs and produce a u-coordin
 Although the functions work internally with integers, the inputs and outputs are 32-byte strings (for X25519) scalar can be generated at random, for example with `crypto.rand` and point should
 be either base_point or the output of another `x25519` call.  
 
-[[Return to contents]](#Contents)
+
 
 ## Curve
 ```v
@@ -110,7 +110,7 @@ Basically, Curve is a TLS 1.3 NamedGroup.
 its defined here for simplicity.  
 vfmt off
 
-[[Return to contents]](#Contents)
+
 
 ## new_key_exchanger
 ```v
@@ -119,7 +119,7 @@ fn new_key_exchanger(c Curve) !KeyExchanger
 
 new_key_exchanger creates new KeyExchanger for curve c, for this time, only curve25519 is supported
 
-[[Return to contents]](#Contents)
+
 
 ## KeyExchanger
 ```v
@@ -143,7 +143,7 @@ interface KeyExchanger {
 
 Key Exchange Protocol
 
-[[Return to contents]](#Contents)
+
 
 ## PublicKey
 ## equal
@@ -154,7 +154,7 @@ fn (pk PublicKey) equal(x PublicKey) bool
 equal tell if two PublicKey is equal, its check if has the same curve and its also check
 if underlying pubkey bytes has exactly the same length and contents.  
 
-[[Return to contents]](#Contents)
+
 
 ## bytes
 ```v
@@ -163,7 +163,7 @@ fn (pk PublicKey) bytes() ![]u8
 
 bytes returns bytes content of PublicKey.  
 
-[[Return to contents]](#Contents)
+
 
 ## PrivateKey
 ## bytes
@@ -173,7 +173,7 @@ fn (pv PrivateKey) bytes() ![]u8
 
 bytes return PrivateKey as a bytes array
 
-[[Return to contents]](#Contents)
+
 
 ## equal
 ```v
@@ -182,7 +182,7 @@ fn (pv PrivateKey) equal(oth PrivateKey) bool
 
 equal whether two PrivateKey has equally identical (its not check pubkey part)
 
-[[Return to contents]](#Contents)
+
 
 ## public_key
 ```v
@@ -192,7 +192,7 @@ fn (mut prv PrivateKey) public_key() !PublicKey
 public_key is accessor for `privatekey.pubk` public key part, its does check if matching public key part or initializes PublicKey if not. Initialization is does under `sync.do_with_param`
 to make sure its  that a function is executed only once.  
 
-[[Return to contents]](#Contents)
+
 
 ## new_x25519_key_exchanger
 ```v
@@ -201,7 +201,7 @@ fn new_x25519_key_exchanger() KeyExchanger
 
 new_x25519_key_exchanger creates new Curve25519 based ECDH key exchange protocol
 
-[[Return to contents]](#Contents)
+
 
 ## Ecdh25519
 ## curve_id
@@ -211,7 +211,7 @@ fn (ec Ecdh25519) curve_id() Curve
 
 return underlying curve id
 
-[[Return to contents]](#Contents)
+
 
 ## private_key_size
 ```v
@@ -220,7 +220,7 @@ fn (ec Ecdh25519) private_key_size() int
 
 private_key_size returns private key size, in bytes
 
-[[Return to contents]](#Contents)
+
 
 ## public_key_size
 ```v
@@ -229,7 +229,7 @@ fn (ec Ecdh25519) public_key_size() int
 
 public_key_size returns public key size, in bytes
 
-[[Return to contents]](#Contents)
+
 
 ## private_key_from_key
 ```v
@@ -238,7 +238,7 @@ fn (ec Ecdh25519) private_key_from_key(key []u8) !PrivateKey
 
 private_key_from_key generates PrivateKey from seeded key.  
 
-[[Return to contents]](#Contents)
+
 
 ## generate_private_key
 ```v
@@ -247,7 +247,7 @@ fn (ec Ecdh25519) generate_private_key() !PrivateKey
 
 generate_private_key generates PrivateKey with random entropy using `crypto.rand`
 
-[[Return to contents]](#Contents)
+
 
 ## public_key
 ```v
@@ -256,7 +256,7 @@ fn (ec Ecdh25519) public_key(pv PrivateKey) !PublicKey
 
 public_key gets PublicKey part of PrivateKey
 
-[[Return to contents]](#Contents)
+
 
 ## shared_secret
 ```v
@@ -266,7 +266,7 @@ fn (ec Ecdh25519) shared_secret(local PrivateKey, remote PublicKey) ![]u8
 shared_secret computes shared keys between two parties, alice private keys and others public keys.  
 Its commonly used as elliptic curve diffie-hellman (ECDH) key exchange protocol
 
-[[Return to contents]](#Contents)
+
 
 ## verify
 ```v
@@ -276,4 +276,4 @@ fn verify(ec KeyExchanger, privkey PrivateKey, pubkey PublicKey) bool
 given PrivateKey privkey, verify do check whether given PublicKey pubkey is really keypair for privkey. Its check by calculating public key part of
 given PrivateKey.  
 
-[[Return to contents]](#Contents)
+
