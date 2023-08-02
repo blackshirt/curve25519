@@ -125,6 +125,9 @@ pub fn (pv PrivateKey) equal(oth PrivateKey) bool {
 		&& subtle.constant_time_compare(pv.privkey, oth.privkey) == 1
 }
 
+// public_key is accessor for `privatekey.pubk` public key part, its does check if matching
+// public key part or initializes PublicKey if not. Initialization is does under `sync.do_with_param`
+// to make sure its  that a function is executed only once.
 pub fn (mut prv PrivateKey) public_key() !PublicKey {
 	prv.pubk_once.do_with_param(fn (mut o PrivateKey) {
 		// internal pubkey of privatekey does not initialized to some values.
