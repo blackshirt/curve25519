@@ -24,6 +24,21 @@ pub enum Curve {
 	ffdhe8192 = 0x0104
 }
 // vfmt on
+	
+fn (c Curve) str() string {
+	match c {
+		.secp256r1 { return 'secp256r1' }
+		.secp384r1 { return 'secp384r1' }
+		.secp521r1 { return 'secp521r1' }
+		.x25519    { return 'x25519' }
+		.x448      { return 'x448' }
+		.ffdhe2048 { return 'ffdhe3072' }
+		.ffdhe3072 { return 'ffdhe3072' }
+		.ffdhe4096 { return 'ffdhe4096' }
+		.ffdhe6144 { return 'ffdhe6144' }
+		.ffdhe8192 { return 'ffdhe8192' }
+	}
+}
 
 // new_key_exchanger creates new KeyExchanger for curve c,
 // for this time, only curve25519 is supported
@@ -43,6 +58,8 @@ pub const (
 
 // Key Exchange Protocol
 pub interface KeyExchanger {
+	// curve_id tell the curve id
+	curve_id() Curve
 	// private_key_size should return underlying PrivateKey bytes size.
 	private_key_size() int
 	// public_key_size should return underlying PublicKey bytes size.
@@ -139,6 +156,11 @@ pub fn new_x25519_key_exchanger() KeyExchanger {
 	return Ecdh25519{}
 }
 
+// return underlying curve id
+pub fn (ec Ecdh25519) curve_id() Curve {
+		return Curve.x25519
+}
+			
 // private_key_size returns private key size, in bytes
 pub fn (ec Ecdh25519) private_key_size() int {
 	return curve25519.private_key_size
