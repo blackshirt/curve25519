@@ -3,6 +3,49 @@ module curve25519
 import crypto.hmac
 import encoding.hex
 
+fn test_x25519_key_exchanger() ! {
+	// this data from https://tls13.xargs.org/#server-key-exchange-generation
+	client_privkey := hex.decode('202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f')!
+	client_pubkey := hex.decode('358072d6365880d1aeea329adf9121383851ed21a28e3b75e965d0d2cd166254')!
+	client_shared_secret := hex.decode('df4a291baa1eb7cfa6934b29b474baad2697e29f1f920dcc77c8a0a088447624')!
+
+	server_privkey := hex.decode('909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeaf')!
+	server_pubkey := hex.decode('9fd7ad6dcff4298dd3f96d5b1b2af910a0535b1488d7f8fabb349a982880b615')!
+	server_shared_secret := hex.decode('df4a291baa1eb7cfa6934b29b474baad2697e29f1f920dcc77c8a0a088447624')!
+
+	kx := new_x25519_key_exchanger()
+	mut client_prvkey := kx.private_key_from_key(client_privkey)!
+
+	// calculates PublicKey from private key with sync.do
+	pubk_sync := client_prvkey.public_key()!
+
+	server_prvkey := kx.private_key_from_key(server_privkey)!
+	// PublicKey part of the private key
+	server_pubk := kx.public_key(server_prvkey)!
+
+	// PublicKey part of the private key
+	client_pubk := kx.public_key(client_prvkey)!
+
+	assert client_pubk.equal(pubk_sync)
+
+	// assert if PublicKey result is expected
+	assert client_pubk.bytes()! == client_pubkey
+
+	// compute shared_secret between client private key and server public key
+	calc_client_shared := kx.shared_secret(client_prvkey, server_pubk)!
+	assert client_shared_secret == calc_client_shared
+
+	// assert if PublicKey result is expected
+	assert server_pubk.bytes()! == server_pubkey
+
+	// compute shared_secret between server private key and client public key
+	calc_server_shared := kx.shared_secret(server_prvkey, client_pubk)!
+	assert calc_server_shared == server_shared_secret
+
+	// assert two shared secret is identical
+	assert calc_client_shared == calc_server_shared
+}
+
 fn test_x25519_ecdh() ! {
 	dh := new_x25519_key_exchanger()
 
