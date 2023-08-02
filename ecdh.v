@@ -24,14 +24,14 @@ pub enum Curve {
 	ffdhe8192 = 0x0104
 }
 // vfmt on
-	
+
 fn (c Curve) str() string {
 	match c {
 		.secp256r1 { return 'secp256r1' }
 		.secp384r1 { return 'secp384r1' }
 		.secp521r1 { return 'secp521r1' }
-		.x25519    { return 'x25519' }
-		.x448      { return 'x448' }
+		.x25519 { return 'x25519' }
+		.x448 { return 'x448' }
 		.ffdhe2048 { return 'ffdhe3072' }
 		.ffdhe3072 { return 'ffdhe3072' }
 		.ffdhe4096 { return 'ffdhe4096' }
@@ -45,7 +45,7 @@ fn (c Curve) str() string {
 pub fn new_key_exchanger(c Curve) !KeyExchanger {
 	match c {
 		.x25519 { return new_x25519_key_exchanger() }
-		else { return error("unsupported curve") }
+		else { return error('unsupported curve') }
 	}
 }
 
@@ -127,10 +127,8 @@ pub fn (pv PrivateKey) equal(oth PrivateKey) bool {
 
 pub fn (mut prv PrivateKey) public_key() !PublicKey {
 	prv.pubk_once.do_with_param(fn (mut o PrivateKey) {
-		// get underlying curve
-		// c := o.curve
 		// internal pubkey of privatekey does not initialized to some values.
-		// we only check the len part, if is not has same length with public_key_size 
+		// we only check the len part, if is not has same length with public_key_size
 		// of provided curve, its mean not initialized.
 		if o.pubk.pubkey.len != o.curve.public_key_size() {
 			// we can not return error here, so panic instead.
@@ -140,12 +138,16 @@ pub fn (mut prv PrivateKey) public_key() !PublicKey {
 			// otherwise, its has same len, but we make sure
 			// its has right value of pubkey
 			// verify its PublicKey of the private key
-			assert verify(o.curve, o, o.pubk) == true
-			pk := PublicKey{
-				curve: o.curve
-				pubkey: o.pubk.pubkey
+			if verify(o.curve, o, o.pubk) {
+				pk := PublicKey{
+					curve: o.curve
+					pubkey: o.pubk.pubkey
+				}
+				o.pubk = pk
+			} else {
+				opk := o.curve.public_key(o) or { panic(err) }
+				o.pubk = opk
 			}
-			o.pubk = pk
 		}
 	}, prv)
 	return prv.pubk
@@ -165,9 +167,9 @@ pub fn new_x25519_key_exchanger() KeyExchanger {
 
 // return underlying curve id
 pub fn (ec Ecdh25519) curve_id() Curve {
-		return Curve.x25519
+	return Curve.x25519
 }
-			
+
 // private_key_size returns private key size, in bytes
 pub fn (ec Ecdh25519) private_key_size() int {
 	return curve25519.private_key_size
@@ -233,19 +235,21 @@ pub fn (ec Ecdh25519) shared_secret(local PrivateKey, remote PublicKey) ![]u8 {
 	}
 	return secret
 }
-		
-// given PrivateKey privkey, verify do check whether given PublicKey pubkey is really 
+
+// given PrivateKey privkey, verify do check whether given PublicKey pubkey is really
 // keypair for privkey. Its check by calculating public key part of
 // given PrivateKey.
 pub fn verify(ec KeyExchanger, privkey PrivateKey, pubkey PublicKey) bool {
-	// check whether params has same curve
-	if privkey.curve != ec || privkey.curve != pubkey.curve { return false }
+	// check whether given params has same curve
+	if privkey.curve != ec || privkey.curve != pubkey.curve {
+		return false
+	}
 	// get the PublicKey part of given PrivateKey
-	pubk := ec.privkey_to_pubkey(privkey) or { return false }
-		
+	pubk := ec.public_key(privkey) or { return false }
+
 	return pubk.equal(pubkey)
 }
-		
+
 // is_zero returns whether seed is all zeroes in constant time.
 fn is_zero(seed []u8) bool {
 	mut acc := u8(0)
