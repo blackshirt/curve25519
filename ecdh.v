@@ -127,14 +127,17 @@ pub fn (pv PrivateKey) equal(oth PrivateKey) bool {
 
 pub fn (mut prv PrivateKey) public_key() !PublicKey {
 	prv.pubk_once.do_with_param(fn (mut o PrivateKey) {
-		// internal pubkey of privatekey does not initialized to some values
-		// TODO: more good check
+		// internal pubkey of privatekey does not initialized to some values.
+		// we only check the len part, if is not has same length with public_key_size 
+		// of provided curve, its mean not initialized.
 		if o.pubk.pubkey.len != o.curve.public_key_size() {
 			// we can not return error here, so panic instead.
 			opk := o.curve.public_key(o) or { panic(err) }
 			o.pubk = opk
 		} else {
-			// verify its privkey PublicKey
+			// otherwise, its has same len, but we make sure
+			// its has right value of pubkey
+			// verify its PublicKey of the private key
 			assert verify(o, o.pubk) == true
 			pk := PublicKey{
 				curve: o.curve
