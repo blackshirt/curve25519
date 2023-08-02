@@ -127,6 +127,8 @@ pub fn (pv PrivateKey) equal(oth PrivateKey) bool {
 
 pub fn (mut prv PrivateKey) public_key() !PublicKey {
 	prv.pubk_once.do_with_param(fn (mut o PrivateKey) {
+		// get underlying curve
+		// c := o.curve
 		// internal pubkey of privatekey does not initialized to some values.
 		// we only check the len part, if is not has same length with public_key_size 
 		// of provided curve, its mean not initialized.
@@ -138,7 +140,7 @@ pub fn (mut prv PrivateKey) public_key() !PublicKey {
 			// otherwise, its has same len, but we make sure
 			// its has right value of pubkey
 			// verify its PublicKey of the private key
-			assert verify(o, o.pubk) == true
+			assert verify(o.curve, o, o.pubk) == true
 			pk := PublicKey{
 				curve: o.curve
 				pubkey: o.pubk.pubkey
@@ -235,11 +237,13 @@ pub fn (ec Ecdh25519) shared_secret(local PrivateKey, remote PublicKey) ![]u8 {
 // given PrivateKey privkey, verify do check whether given PublicKey pubkey is really 
 // keypair for privkey. Its check by calculating public key part of
 // given PrivateKey.
-fn verify(privkey PrivateKey, pubkey PublicKey) bool {
-	if privkey.curve != pubkey.curve { return false }
+pub fn verify(ec KeyExchanger, privkey PrivateKey, pubkey PublicKey) bool {
+	// check whether params has same curve
+	if privkey.curve != ec || privkey.curve != pubkey.curve { return false }
 	// get the PublicKey part of given PrivateKey
-	pubk_for_privk := x25519(privkey.privkey, base_point) or { return false }
-	return pubk_for_privkey.equal(pubkey)
+	pubk := ec.privkey_to_pubkey(privkey) or { return false }
+		
+	return pubk.equal(pubkey)
 }
 		
 // is_zero returns whether seed is all zeroes in constant time.
