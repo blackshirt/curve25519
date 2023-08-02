@@ -134,6 +134,8 @@ pub fn (mut prv PrivateKey) public_key() !PublicKey {
 			opk := o.curve.public_key(o) or { panic(err) }
 			o.pubk = opk
 		} else {
+			// verify its privkey PublicKey
+			assert verify(o, o.pubk) == true
 			pk := PublicKey{
 				curve: o.curve
 				pubkey: o.pubk.pubkey
@@ -226,7 +228,17 @@ pub fn (ec Ecdh25519) shared_secret(local PrivateKey, remote PublicKey) ![]u8 {
 	}
 	return secret
 }
-
+		
+// given PrivateKey privkey, verify do check whether given PublicKey pubkey is really 
+// keypair for privkey. Its check by calculating public key part of
+// given PrivateKey.
+fn verify(privkey PrivateKey, pubkey PublicKey) bool {
+	if privkey.curve != pubkey.curve { return false }
+	// get the PublicKey part of given PrivateKey
+	pubk_for_privk := x25519(privkey.privkey, base_point) or { return false }
+	return pubk_for_privkey.equal(pubkey)
+}
+		
 // is_zero returns whether seed is all zeroes in constant time.
 fn is_zero(seed []u8) bool {
 	mut acc := u8(0)
