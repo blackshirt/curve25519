@@ -10,7 +10,9 @@ import crypto.internal.subtle
 
 // Basically, Curve is a TLS 1.3 NamedGroup.
 // its defined here for simplicity.
+
 // vfmt off
+
 pub enum Curve {
 	secp256r1 = 0x0017
 	secp384r1 = 0x0018
