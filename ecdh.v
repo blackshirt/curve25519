@@ -137,7 +137,7 @@ pub fn (mut prv PrivateKey) public_key() !PublicKey {
 		} else {
 			// otherwise, its has same len, but we make sure
 			// its has right value of pubkey
-			// verify its PublicKey of the private key
+			// verify its PublicKey of the private key, if true, return the PublicKey
 			if verify(o.curve, o, o.pubk) {
 				pk := PublicKey{
 					curve: o.curve
@@ -145,6 +145,7 @@ pub fn (mut prv PrivateKey) public_key() !PublicKey {
 				}
 				o.pubk = pk
 			} else {
+				// otherwise, its would recalculate the value of the PublicKey part.
 				opk := o.curve.public_key(o) or { panic(err) }
 				o.pubk = opk
 			}
