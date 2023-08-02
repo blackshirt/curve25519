@@ -26,6 +26,7 @@ fn test_x25519_key_exchanger() ! {
 	// PublicKey part of the private key
 	client_pubk := kx.public_key(client_prvkey)!
 
+	// test wheter client PublicKey generated from Key
 	assert client_pubk.equal(pubk_sync)
 
 	// assert if PublicKey result is expected
