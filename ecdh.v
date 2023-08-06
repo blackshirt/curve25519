@@ -127,7 +127,7 @@ pub fn (pv PrivateKey) equal(oth PrivateKey) bool {
 		&& subtle.constant_time_compare(pv.privkey, oth.privkey) == 1
 }
 
-// public_key is accessor for `privatekey.pubk` public key part, its does check if matching
+// public_key is accessor for `privatekey.pubk` PublicKey part, its does check if matching
 // public key part or initializes PublicKey if not. Initialization is does under `sync.do_with_param`
 // to make sure its  that a function is executed only once.
 pub fn (mut prv PrivateKey) public_key() !PublicKey {
@@ -246,8 +246,8 @@ pub fn (ec Ecdh25519) shared_secret(local PrivateKey, remote PublicKey) ![]u8 {
 // keypair for privkey. Its check by calculating public key part of
 // given PrivateKey.
 pub fn verify(ec KeyExchanger, privkey PrivateKey, pubkey PublicKey) bool {
-	// check whether given params has same curve
-	if privkey.curve != ec || privkey.curve != pubkey.curve {
+	// check whether given params is on same curve.
+	if privkey.curve != ec || pubkey.curve != ec || privkey.curve != pubkey.curve {
 		return false
 	}
 	// get the PublicKey part of given PrivateKey
