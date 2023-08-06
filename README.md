@@ -1,8 +1,5 @@
-# module curve25519
-
-
 # curve25519
-----------
+-----------
 
 This module provides two functionality :
 
