@@ -108,6 +108,7 @@ struct PrivateKey {
 	privkey []u8
 mut:
 	pubk      PublicKey
+	verified  bool
 	pubk_once sync.Once = sync.new_once()
 }
 
@@ -135,25 +136,17 @@ pub fn (mut prv PrivateKey) public_key() !PublicKey {
 		// internal pubkey of privatekey does not initialized to some values.
 		// we only check the len part, if is not has same length with public_key_size
 		// of provided curve, its mean not initialized.
-		if o.pubk.pubkey.len != o.curve.public_key_size() {
+		if o.pubk.pubkey.len != o.curve.public_key_size() || !o.verified {
 			// we can not return error here, so panic instead.
 			opk := o.curve.public_key(o) or { panic(err) }
 			o.pubk = opk
+			o.verified = true
 		} else {
-			// otherwise, its has same len, but we make sure
-			// its has right value of pubkey
-			// verify its PublicKey of the private key, if true, return the PublicKey
-			if verify(o.curve, o, o.pubk) {
-				pk := PublicKey{
-					curve: o.curve
-					pubkey: o.pubk.pubkey
-				}
-				o.pubk = pk
-			} else {
-				// otherwise, its would recalculate the value of the PublicKey part.
-				opk := o.curve.public_key(o) or { panic(err) }
-				o.pubk = opk
+			pk := PublicKey{
+				curve: o.curve
+				pubkey: o.pubk.pubkey
 			}
+			o.pubk = pk
 		}
 	}, prv)
 	return prv.pubk
