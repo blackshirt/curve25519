@@ -19,14 +19,13 @@ pub const (
 		0, 0, 0, 0, 0, 0, 0, 0]
 )
 
-// x25519 returns the result of the scalar multiplication (scalar * point),
-// according to RFC 7748, Section 5. scalar, point and the return value are
-// slices of 32 bytes.
-// The functions take a scalar and a u-coordinate as inputs and produce a u-coordinate as output.
+// x25519 returns the result of the scalar multiplication (`scalar` * `point`),
+// according to RFC 7748, Section 5. scalar, point and the return value are slices of 32 bytes.
+// The functions take a scalar and a `u-coordinate` as inputs and produce a `u-coordinate` as output.
 // Although the functions work internally with integers, the inputs and
 // outputs are 32-byte strings (for X25519)
 // scalar can be generated at random, for example with `crypto.rand` and point should
-// be either base_point or the output of another `x25519` call.
+// be either `base_point` or the output of another `x25519` call.
 pub fn x25519(scalar []u8, point []u8) ![]u8 {
 	mut dst := []u8{len: 32, cap: 32}
 	return x25519_generic(mut dst, scalar, point)
